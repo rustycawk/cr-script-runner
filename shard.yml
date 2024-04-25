@@ -1,0 +1,13 @@
+name: script-runner
+version: 0.1.0
+
+authors:
+  - Nikita Matveyev <n.matveev@gosu.kz>
+
+targets:
+  script-runner:
+    main: src/script-runner.cr
+    
+crystal: ">= 1.11.1"
+
+license: MIT
