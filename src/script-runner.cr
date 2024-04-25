@@ -19,10 +19,26 @@ module Temp::ScriptRunner
         next
       end
 
-      sha1sum = context.request.query_params["key"]
+      key = context.request.query_params["key"]
+      real_key = Digest::SHA1.hexdigest(File.read(script_path))
 
-      if sha1sum.nil? || sha1sum.empty? || sha1sum != Digest::SHA1.hexdigest(File.read(script_path))
-        puts "#{Time.local}: Invalid key #{sha1sum} for script #{script_name}"
+      if File.exists?(script_path)
+        script_contents = File.read_lines(script_path)
+        key_line = script_contents.find do |line|
+          line.starts_with?("# KEY=") || line.starts_with?("// KEY=")
+        end
+
+        if key_line
+          file_key = key_line.split("=", 2)[1].strip
+          if key == file_key
+            real_key = file_key
+          end
+        end
+      end
+
+      if key.nil? || key.empty? || key != real_key
+        puts "#{Time.local}: Invalid key #{key} for script #{script_name}"
+        context.response.print "Invalid key #{key} for script #{script_name}"
         context.response.status_code = 403
         next
       end
